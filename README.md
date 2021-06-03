@@ -6,8 +6,17 @@ _Not ready for production_
 
 ## Feature
 
-- Body method helpers to easily read body
+- Method shortcuts (`.post()`, `.get()`)
+- Body method helpers (`.json()`, `.text()`)
 - Throw error if status code is not ok (>= 200 and < 300)
+- Parse outgoing body and set `content-type` header.
+- Instances with custom defaults
+
+## Installation
+
+```bash
+npm i undecim
+```
 
 ## Usage
 
@@ -85,7 +94,8 @@ The body of the request to send as it. Use instead of `options.data` if you pref
 A prefix URL to append before the request url.
 
 ```
-un("/v1/user", { prefixURL: "https://example.com" });
+un("/user", { prefixURL: "https://example.com/v1" });
+// GET https://example.com/v1/user
 ```
 
 ## License
