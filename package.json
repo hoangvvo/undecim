@@ -1,8 +1,9 @@
 {
   "name": "undecim",
+  "type": "module",
   "version": "0.0.1",
   "description": "Elegant APIs for undici",
-  "main": "dist/index.js",
+  "main": "dist/index.cjs",
   "exports": {
     "import": "./dist/index.js",
     "require": "./dist/index.cjs"
