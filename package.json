@@ -1,0 +1,45 @@
+{
+  "name": "undecim",
+  "version": "0.0.0",
+  "description": "Elegant APIs for undici",
+  "main": "dist/index.js",
+  "exports": {
+    "import": "./dist/index.js",
+    "require": "./dist/index.cjs"
+  },
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build:esm": "esbuild src/index.ts --external:undici --platform=node --bundle --outdir=dist --format=esm",
+    "build:cjs": "esbuild src/index.ts --external:undici --platform=node --bundle --outdir=dist --format=cjs",
+    "build:dts": "tsc",
+    "build": "npm run clean && npm run build:dts && npm run build:esm && npm run build:cjs",
+    "clean": "rm -rf dist",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "format": "npx prettier ./src"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hoangvvo/undecim.git"
+  },
+  "author": "Hoang Vo (https://hoangvvo.com)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/hoangvvo/undecim/issues"
+  },
+  "homepage": "https://github.com/hoangvvo/undecim#readme",
+  "engines": {
+    "node": "^12.0.0 || ^14.0.0 || >=16.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^15.12.0",
+    "esbuild": "^0.12.5",
+    "typescript": "^4.3.2"
+  },
+  "dependencies": {
+    "undici": "^4.0.0-rc.5"
+  }
+}
