@@ -13,10 +13,9 @@
   ],
   "sideEffects": false,
   "scripts": {
-    "build:esm": "esbuild src/index.ts --external:undici --platform=node --bundle --outdir=dist --format=esm",
-    "build:cjs": "esbuild src/index.ts --external:undici --platform=node --bundle --outdir=dist --format=cjs",
+    "build:js": "rollup -c",
     "build:dts": "tsc",
-    "build": "npm run clean && npm run build:dts && npm run build:esm && npm run build:cjs",
+    "build": "npm run clean && npm run build:dts && npm run build:js",
     "clean": "rm -rf dist",
     "test": "echo \"Error: no test specified\" && exit 1",
     "format": "npx prettier ./src"
@@ -35,8 +34,9 @@
     "node": "^12.0.0 || ^14.0.0 || >=16.0.0"
   },
   "devDependencies": {
+    "@rollup/plugin-typescript": "^8.2.1",
     "@types/node": "^15.12.0",
-    "esbuild": "^0.12.5",
+    "rollup": "^2.50.6",
     "typescript": "^4.3.2"
   },
   "dependencies": {

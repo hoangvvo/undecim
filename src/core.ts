@@ -1,6 +1,5 @@
 import type { IncomingHttpHeaders } from "http";
 import { Dispatcher, request as _request } from "undici";
-import { URLSearchParams } from "url";
 import { HTTPStatusError } from "./errors.js";
 import { deepMerge } from "./merge.js";
 import type {
@@ -8,7 +7,7 @@ import type {
   Response,
   ResponseData,
   ResponsePromise,
-  Undecim,
+  Undecim
 } from "./types.js";
 
 function _undiciRemap(value: Dispatcher.ResponseData): ResponseData {
