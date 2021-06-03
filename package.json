@@ -1,6 +1,6 @@
 {
   "name": "undecim",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Elegant APIs for undici",
   "main": "dist/index.js",
   "exports": {
