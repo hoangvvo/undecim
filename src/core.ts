@@ -7,7 +7,7 @@ import type {
   Response,
   ResponseData,
   ResponsePromise,
-  Undecim
+  Undecim,
 } from "./types.js";
 
 function _undiciRemap(value: Dispatcher.ResponseData): ResponseData {

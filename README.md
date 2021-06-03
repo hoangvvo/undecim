@@ -22,6 +22,7 @@ npm i undecim
 
 ```js
 import un from "undecim";
+// CommonJS: const un = require("undecim").default;
 
 // Set Accept header and get response as JSON shortcut
 const json = await un
