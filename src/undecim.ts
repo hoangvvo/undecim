@@ -1,5 +1,6 @@
 import type { IncomingHttpHeaders } from "http";
-import { Dispatcher, request as _request } from "undici";
+import type { Dispatcher } from "undici";
+import { request as _request } from "undici";
 import { HTTPStatusError } from "./errors.js";
 import { deepMerge } from "./merge.js";
 import type {
@@ -66,7 +67,7 @@ function withMethod(options: Options = {}, method: Options["method"]) {
 }
 
 export function create(defaults: Options = {}): Undecim {
-  const un = function un(url, opts: Options = {}) {
+  const un = function un(url, opts  = {}) {
     const options = deepMerge(defaults, opts, false) as Options;
 
     const undiciOpts = _undiciOptions(options);
