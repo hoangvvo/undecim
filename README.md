@@ -6,7 +6,7 @@ _Not ready for production_
 
 ## Feature
 
-- Method shortcuts (`.post()`, `.get()`)
+- Method shortcuts (`.post()`, `.get()`, etc.)
 - Body method helpers (`.json()`, `.text()`)
 - Throw error if status code is not ok (>= 200 and < 300)
 - Parse outgoing body and set `content-type` header.
@@ -94,9 +94,34 @@ The body of the request to send as it. Use instead of `options.data` if you pref
 
 A prefix URL to append before the request url.
 
-```
+```js
 un("/user", { prefixURL: "https://example.com/v1" });
 // GET https://example.com/v1/user
+```
+
+## Error handling
+
+Undecim Error extends [Undici Errors](https://undici.nodejs.org/#/docs/api/Errors) to include two additional fields `response` and `options`. However, in cases when the request could not be executed by Undici, the original error will be thrown without `response` and `options`.
+
+```js
+import { UndecimError } from "undecim";
+
+try {
+  const response = await un("https://example.com");
+  // or
+  const response = await un("https://example.com").json();
+} catch (err) {
+  if (err instanceof UndecimError) {
+    console.log(err.response);
+    console.log(err.options);
+    // Response body is not present similar to that of successful responses
+    // Use helper methods like err.response.json(), err.response.text()
+    // or iterate through err.response.body
+  } else {
+    // err.response and err.options
+    // are not available
+  }
+}
 ```
 
 ## License
