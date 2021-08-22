@@ -67,7 +67,7 @@ function withMethod(options: Options = {}, method: Options["method"]) {
 }
 
 export function create(defaults: Options = {}): Undecim {
-  const un = function un(url, opts  = {}) {
+  const un = function un(url, opts = {}) {
     const options = deepMerge(defaults, opts, false) as Options;
 
     const undiciOpts = _undiciOptions(options);
