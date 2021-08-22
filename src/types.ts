@@ -21,7 +21,7 @@ export interface Options {
   headers?: IncomingHttpHeaders;
   data?: string | Buffer | URLSearchParams | Record<string, unknown>;
   body?: Dispatcher.DispatchOptions["body"];
-  method?: string;
+  method?: Dispatcher.HttpMethod;
   prefixURL?: string;
 }
 
