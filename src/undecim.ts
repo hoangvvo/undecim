@@ -7,10 +7,10 @@ import type {
   Response,
   ResponseData,
   ResponsePromise,
-  Undecim,
+  Undecim
 } from "./types.js";
 
-function _undiciRemap(value: Dispatcher.ResponseData): ResponseData {
+function _makeResponse(value: Dispatcher.ResponseData): ResponseData {
   return {
     body: value.body,
     headers: value.headers,
@@ -79,7 +79,7 @@ export function create(defaults: Options = {}): Undecim {
       // Delay the fetch so that helper methods can set the Accept header
       await Promise.resolve();
       const response = (await _request(url, undiciOpts).then(
-        _undiciRemap
+        _makeResponse
       )) as Response;
       response.json = <T>() => _json<T>(response);
       response.text = () => _text(response);

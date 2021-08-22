@@ -26,12 +26,12 @@ import un from "undecim";
 
 // Set Accept header and get response as JSON shortcut
 const json = await un
-  .post("https://example.com", { body: { foo: "bar" } })
+  .post("https://example.com", { data: { foo: "bar" } })
   .json();
 
 // Set Accept header and get response as text shortcut
 const text = await un
-  .post("https://example.com", { body: { foo: "bar" } })
+  .post("https://example.com", { data: { foo: "bar" } })
   .text();
 
 // Retrieve response as it is
