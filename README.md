@@ -35,7 +35,7 @@ const text = await un
   .text();
 
 // Retrieve response as it is
-const response = await un.post("https://example.com", { body: { foo: "bar" } });
+const response = await un.post("https://example.com", { data: { foo: "bar" } });
 console.log(response.body); // body is of type Readable
 console.log(response.headers);
 console.log(response.status);
