@@ -1,4 +1,4 @@
-import { Client, request as _request } from "undici";
+import { Client, errors, request as _request } from "undici";
 import { augmentError, HTTPStatusError } from "./errors.js";
 import { deepMerge } from "./merge.js";
 import type {
@@ -6,7 +6,7 @@ import type {
   RequestOptions,
   Response,
   ResponsePromise,
-  Undecim
+  Undecim,
 } from "./types.js";
 
 function withMethod(
@@ -26,7 +26,10 @@ function setHeader(
   options.headers[key] = value;
 }
 
-function transformData(options: Omit<RequestOptions, "data">, data: RequestOptions["data"]): Omit<RequestOptions, "data"> {
+function transformData(
+  options: Omit<RequestOptions, "data">,
+  data: RequestOptions["data"]
+): Omit<RequestOptions, "data"> {
   if (Array.isArray(options.headers))
     throw new Error("options.headers array is not supported");
   if (data && typeof data === "object") {
@@ -82,10 +85,12 @@ export function create({ origin, ...defaults }: CreateOptions = {}): Undecim {
 
       let response: Response;
       try {
-        response = (await _request(url, options)) as Response;
+        response = (await requester(url, options)) as Response;
       } catch (err: any) {
         // undici error
-        throw augmentError(err, url, undefined, options);
+        if (err instanceof errors.UndiciError)
+          throw augmentError(err, url, undefined, options);
+        else throw err;
       }
 
       response.json = <T>() => response.body.json() as Promise<T>;
