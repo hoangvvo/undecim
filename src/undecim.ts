@@ -6,7 +6,7 @@ import type {
   RequestOptions,
   Response,
   ResponsePromise,
-  Undecim,
+  Undecim
 } from "./types.js";
 
 function withMethod(
@@ -26,10 +26,7 @@ function setHeader(
   options.headers[key] = value;
 }
 
-function transformData({
-  data,
-  ...options
-}: RequestOptions): Omit<RequestOptions, "data"> {
+function transformData(options: Omit<RequestOptions, "data">, data: RequestOptions["data"]): Omit<RequestOptions, "data"> {
   if (Array.isArray(options.headers))
     throw new Error("options.headers array is not supported");
   if (data && typeof data === "object") {
@@ -77,7 +74,7 @@ export function create({ origin, ...defaults }: CreateOptions = {}): Undecim {
   }
 
   const un = function un(url, { data, ...opts } = {}) {
-    const options = transformData(deepMerge(defaults, opts, false));
+    const options = transformData(deepMerge(defaults, opts, false), data);
 
     const fn = async () => {
       // Delay the fetch so that helper methods can set the Accept header
