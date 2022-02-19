@@ -1,8 +1,13 @@
 import { create } from "./undecim.js";
 
 const un = create();
-export default un;
-
 export { HTTPStatusError, UndecimError } from "./errors.js";
-export * from "./types.js";
-
+export type {
+  CreateOptions,
+  RequestOptions,
+  Response,
+  ResponsePromise,
+  Undecim,
+} from "./types.js";
+export { create };
+export default un;

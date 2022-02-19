@@ -1,36 +1,40 @@
-import type { IncomingHttpHeaders } from "http";
-import type { Readable } from "stream";
+import type { Blob } from "buffer";
 import type { Dispatcher } from "undici";
-import type { URLSearchParams } from "url";
 
-export interface BodyMethods {
-  json<T>(): Promise<T>;
+export interface BodyMixins {
+  json<T = any>(): Promise<T>;
   text(): Promise<string>;
+  blob(): Promise<Blob>;
+  arrayBuffer(): Promise<ArrayBuffer>;
 }
 
-export interface ResponseData {
-  status: number;
-  headers: IncomingHttpHeaders;
-  body: Readable;
-  ok: boolean;
-}
-export type ResponsePromise = BodyMethods & Promise<Response>;
-export type Response = BodyMethods & ResponseData;
+export type Response = Dispatcher.ResponseData & BodyMixins;
 
-export interface Options {
-  headers?: IncomingHttpHeaders;
-  data?: string | Buffer | URLSearchParams | Record<string, unknown>;
-  body?: Dispatcher.DispatchOptions["body"];
-  method?: Dispatcher.HttpMethod;
-  prefixURL?: string;
-}
+export type ResponsePromise = BodyMixins & Promise<Response>;
+
+export type CreateOptions = {
+  origin?: string | URL;
+} & RequestOptions;
+
+// RequestOptions for undici
+export type RequestOptions = Omit<
+  Dispatcher.RequestOptions,
+  "origin" | "path" | "method"
+> &
+  Partial<Pick<Dispatcher.RequestOptions, "method">> & {
+    data?: string | Buffer | URLSearchParams | Record<string, unknown>;
+  };
+
+export type RequestURL = string | URL;
 
 export interface Undecim {
-  (url: string, options?: Options): ResponsePromise;
-  get(url: string, options?: Options): ResponsePromise;
-  post(url: string, options?: Options): ResponsePromise;
-  put(url: string, options?: Options): ResponsePromise;
-  delete(url: string, options?: Options): ResponsePromise;
-  patch(url: string, options?: Options): ResponsePromise;
-  create(defaults?: Options): Undecim;
+  (url: RequestURL, options?: RequestOptions): ResponsePromise;
+  get(url: RequestURL, options?: Omit<RequestOptions, "method">): ResponsePromise;
+  post(url: RequestURL, options?: Omit<RequestOptions, "method">): ResponsePromise;
+  put(url: RequestURL, options?: Omit<RequestOptions, "method">): ResponsePromise;
+  delete(
+    url: RequestURL,
+    options?: Omit<RequestOptions, "method">
+  ): ResponsePromise;
+  patch(url: RequestURL, options?: Omit<RequestOptions, "method">): ResponsePromise;
 }

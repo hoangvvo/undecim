@@ -1,106 +1,121 @@
-import type { IncomingHttpHeaders } from "http";
-import type { Dispatcher } from "undici";
-import { request as _request } from "undici";
-import { HTTPStatusError } from "./errors.js";
+import { Client, request as _request } from "undici";
+import { augmentError, HTTPStatusError } from "./errors.js";
 import { deepMerge } from "./merge.js";
 import type {
-  Options,
+  CreateOptions,
+  RequestOptions,
   Response,
-  ResponseData,
   ResponsePromise,
   Undecim
 } from "./types.js";
 
-function _makeResponse(value: Dispatcher.ResponseData): ResponseData {
-  return {
-    body: value.body,
-    headers: value.headers,
-    status: value.statusCode,
-    ok: value.statusCode >= 200 && value.statusCode < 300,
-  };
+function withMethod(
+  options: Omit<RequestOptions, "method"> = {},
+  method: RequestOptions["method"]
+): RequestOptions {
+  return { ...options, method };
 }
 
-async function _text(
-  response: Promise<ResponseData> | ResponseData
-): Promise<string> {
-  if ("then" in response) response = await response;
-  let raw = "";
-  for await (const data of response.body) {
-    raw += data;
-  }
-  return raw;
+function setHeader(
+  options: Omit<RequestOptions, "data">,
+  key: string,
+  value: string
+) {
+  if (!options.headers) options.headers = {};
+  // @ts-ignore
+  options.headers[key] = value;
 }
 
-function _json<T>(response: Promise<ResponseData> | ResponseData): Promise<T> {
-  return _text(response).then(JSON.parse);
-}
-
-function _undiciOptions(options: Options) {
-  const undiciOpts: Omit<Dispatcher.RequestOptions, "origin" | "path"> & {
-    headers: IncomingHttpHeaders;
-  } = {
-    method: options.method || "GET",
-    headers: options.headers || {},
-    body: options.body,
-  };
-
-  if (options.data && typeof options.data === "object") {
-    if (options.data instanceof URLSearchParams) {
-      undiciOpts.body = options.data.toString();
-      undiciOpts.headers["content-type"] = "application/x-www-form-urlencoded";
-    } else if (Buffer.isBuffer(options.data)) {
-      undiciOpts.body = options.data;
+function transformData({
+  data,
+  ...options
+}: RequestOptions): Omit<RequestOptions, "data"> {
+  if (Array.isArray(options.headers))
+    throw new Error("options.headers array is not supported");
+  if (data && typeof data === "object") {
+    if (data instanceof URLSearchParams) {
+      options.body = data.toString();
+      setHeader(options, "content-type", "application/x-www-form-urlencoded");
+    } else if (Buffer.isBuffer(data)) {
+      options.body = data;
     } else {
-      undiciOpts.body = JSON.stringify(options.data);
-      undiciOpts.headers["content-type"] = "application/json";
+      options.body = JSON.stringify(data);
+      setHeader(options, "content-type", "application/json");
     }
   } else {
-    undiciOpts.body = options.data;
+    options.body = data;
   }
-
-  return undiciOpts;
-}
-
-function withMethod(options: Options = {}, method: Options["method"]) {
-  options.method = method;
   return options;
 }
 
-export function create(defaults: Options = {}): Undecim {
-  const un = function un(url, opts = {}) {
-    const options = deepMerge(defaults, opts, false) as Options;
+export function create({ origin, ...defaults }: CreateOptions = {}): Undecim {
+  let requester = _request;
+  if (origin) {
+    const client = new Client(origin);
+    requester = (url, options) => {
+      let origin: string | undefined, path: string;
+      if (typeof url === "string") {
+        if (url.startsWith("/")) path = url;
+        else {
+          const urlObj = new URL(url);
+          origin = urlObj.origin;
+          path = url.substring(origin.length);
+        }
+      } else if ("origin" in url) {
+        origin = url.origin;
+        path = url.href.substring(origin.length);
+      } else {
+        throw new Error("UrlObject is not supported"); // FIXME: UrlObject not supported
+      }
+      return client.request({
+        origin,
+        path,
+        ...options,
+        method: options?.method || "GET",
+      });
+    };
+  }
 
-    const undiciOpts = _undiciOptions(options);
-
-    if (options.prefixURL) {
-      url = url.replace(/^(?!.*\/\/)\/?(.*)$/, options.prefixURL + "/$1");
-    }
+  const un = function un(url, { data, ...opts } = {}) {
+    const options = transformData(deepMerge(defaults, opts, false));
 
     const fn = async () => {
       // Delay the fetch so that helper methods can set the Accept header
       await Promise.resolve();
-      const response = (await _request(url, undiciOpts).then(
-        _makeResponse
-      )) as Response;
-      response.json = <T>() => _json<T>(response);
-      response.text = () => _text(response);
-      if (!response.ok) {
-        throw new HTTPStatusError(response, options);
+
+      let response: Response;
+      try {
+        response = (await _request(url, options)) as Response;
+      } catch (err: any) {
+        // undici error
+        throw augmentError(err, url, undefined, options);
       }
+
+      response.json = <T>() => response.body.json() as Promise<T>;
+      response.text = () => response.body.text();
+      response.blob = () => response.body.blob();
+      response.arrayBuffer = () => response.body.arrayBuffer();
+
+      if (!(response.statusCode >= 200 && response.statusCode < 300)) {
+        throw new HTTPStatusError(response, url, options);
+      }
+
       return response;
     };
 
     const result = fn() as ResponsePromise;
 
-    result.json = <T>() => {
-      undiciOpts.headers.accept =
-        undiciOpts.headers.accept || "application/json";
-      return _json<T>(result);
+    result.json = async <T>() => {
+      setHeader(options, "accept", "application/json");
+      return (await result).json<T>();
     };
-    result.text = () => {
-      undiciOpts.headers.accept = undiciOpts.headers.accept || "text/*";
-      return _text(result);
+    result.text = async () => {
+      setHeader(options, "accept", "text/*");
+      return (await result).text();
     };
+    result.blob = () => result.then((response) => response.blob());
+    result.arrayBuffer = () =>
+      result.then((response) => response.arrayBuffer());
 
     return result;
   } as Undecim;
@@ -110,7 +125,6 @@ export function create(defaults: Options = {}): Undecim {
   un.put = (url, options) => un(url, withMethod(options, "PUT"));
   un.delete = (url, options) => un(url, withMethod(options, "DELETE"));
   un.patch = (url, options) => un(url, withMethod(options, "PATCH"));
-  un.create = create;
 
   return un;
 }

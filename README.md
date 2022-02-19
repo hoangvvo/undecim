@@ -7,9 +7,9 @@ _Not ready for production_
 ## Feature
 
 - Method shortcuts (`.post()`, `.get()`, etc.)
-- Body method helpers (`.json()`, `.text()`)
+- Body mixins helpers like `fetch` (`.json()`, `.text()`) before response
 - Throw error if status code is not ok (>= 200 and < 300)
-- Parse outgoing body and set `content-type` header.
+- Parse outgoing body (`options.data`) and set `content-type` header.
 - Instances with custom defaults
 
 ## Installation
@@ -21,7 +21,7 @@ npm i undecim
 ## Usage
 
 ```js
-import un from "undecim";
+import un, { create } from "undecim";
 // CommonJS: const un = require("undecim").default;
 
 // Set Accept header and get response as JSON shortcut
@@ -36,13 +36,15 @@ const text = await un
 
 // Retrieve response as it is
 const response = await un.post("https://example.com", { data: { foo: "bar" } });
-console.log(response.body); // body is of type Readable
+console.log(response.body); // body is of type Readable & BodyMixin
 console.log(response.headers);
-console.log(response.status);
-
-// and read body afterward
+console.log(response.statusCode);
+// body mixins also available here
 await response.text();
 await response.json();
+
+// Create a new instance of undecim
+const un = create(options);
 ```
 
 ## APIs
@@ -61,19 +63,9 @@ There are methods provided as shortcuts to set HTTP methods.
 - **un.delete(url[, options])**
 - **un.patch(url[, options])**
 
-### un.create(defaults)
-
-Create a new instance with specific `defaults`. These `default` will be merged into each of its requests' `options`.
-
 ### options
 
-#### options.method
-
-Set the HTTP method for the request.
-
-#### options.headers
-
-Set HTTP headers for the request
+The same with [`options` in `undici.request`](https://undici.nodejs.org/#/?id=undicirequesturl-options-promise) with following additions.
 
 #### options.data
 
@@ -86,22 +78,21 @@ This can be one of the following:
 - `Buffer`
 - other `object`. Content Type will be `application/x-www-form-urlencoded`.
 
-#### options.body
+### create(defaults)
 
-The body of the request to send as it. Use instead of `options.data` if you prefer not to have the data serialized and headers set automatically.
+Create a new instance with specific `defaults`. These `default` will be merged into each of its requests' `options`.
 
-#### options.prefixURL
-
-A prefix URL to append before the request url.
-
-```js
-un("/user", { prefixURL: "https://example.com/v1" });
-// GET https://example.com/v1/user
-```
+If `default.origin` is defined, a [Client](https://undici.nodejs.org/#/docs/api/Client) is created. Requests made then should match the origin.
 
 ## Error handling
 
-Undecim Error extends [Undici Errors](https://undici.nodejs.org/#/docs/api/Errors) to include two additional fields `response` and `options`. However, in cases when the request could not be executed by Undici, the original error will be thrown without `response` and `options`.
+Only difference in `undecim` is that it also throws `HTTPStatusError` when status code is not >= 200 and < 300.
+
+Errors thrown by `undici` is also augmented with additional properties:
+
+- `response` (non-enumerable) the original response object (including body mixins). **Only available if there is no `undici` error.**
+- `options`: the request options
+- `url`: the request URL
 
 ```js
 import { UndecimError } from "undecim";
@@ -112,14 +103,16 @@ try {
   const response = await un("https://example.com").json();
 } catch (err) {
   if (err instanceof UndecimError) {
-    console.log(err.response);
     console.log(err.options);
-    // Response body is not present similar to that of successful responses
-    // Use helper methods like err.response.json(), err.response.text()
-    // or iterate through err.response.body
+    console.log(err.url);
+    // Not always available
+    if (err.response) {
+      console.log(err.response.statusCode);
+      console.log(err.response.headers);
+      console.log(await err.response.text());
+    }
   } else {
-    // err.response and err.options
-    // are not available
+    // some other handling
   }
 }
 ```
