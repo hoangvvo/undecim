@@ -21,7 +21,12 @@ export function augmentError(
 
 export class UndecimError extends errors.UndiciError {
   response?: Response;
-  constructor(message: string, response: Response, public url: RequestURL, public options: RequestOptions) {
+  constructor(
+    message: string,
+    response: Response,
+    public url: RequestURL,
+    public options: RequestOptions
+  ) {
     super(message);
     Object.defineProperty(this, "response", { value: response });
   }

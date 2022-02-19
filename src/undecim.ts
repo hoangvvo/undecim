@@ -6,7 +6,7 @@ import type {
   RequestOptions,
   Response,
   ResponsePromise,
-  Undecim
+  Undecim,
 } from "./types.js";
 
 function withMethod(

@@ -29,12 +29,24 @@ export type RequestURL = string | URL;
 
 export interface Undecim {
   (url: RequestURL, options?: RequestOptions): ResponsePromise;
-  get(url: RequestURL, options?: Omit<RequestOptions, "method">): ResponsePromise;
-  post(url: RequestURL, options?: Omit<RequestOptions, "method">): ResponsePromise;
-  put(url: RequestURL, options?: Omit<RequestOptions, "method">): ResponsePromise;
+  get(
+    url: RequestURL,
+    options?: Omit<RequestOptions, "method">
+  ): ResponsePromise;
+  post(
+    url: RequestURL,
+    options?: Omit<RequestOptions, "method">
+  ): ResponsePromise;
+  put(
+    url: RequestURL,
+    options?: Omit<RequestOptions, "method">
+  ): ResponsePromise;
   delete(
     url: RequestURL,
     options?: Omit<RequestOptions, "method">
   ): ResponsePromise;
-  patch(url: RequestURL, options?: Omit<RequestOptions, "method">): ResponsePromise;
+  patch(
+    url: RequestURL,
+    options?: Omit<RequestOptions, "method">
+  ): ResponsePromise;
 }
