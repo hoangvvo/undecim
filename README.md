@@ -4,6 +4,10 @@ Elegant APIs for [undici](https://github.com/nodejs/undici).
 
 _Not ready for production_
 
+```sh
+npm i undici undecim
+```
+
 ## Feature
 
 - Method shortcuts (`.post()`, `.get()`, etc.)
