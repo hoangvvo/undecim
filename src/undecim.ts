@@ -6,7 +6,7 @@ import type {
   RequestOptions,
   Response,
   ResponsePromise,
-  Undecim,
+  Undecim
 } from "./types.js";
 
 function withMethod(
@@ -32,16 +32,15 @@ function transformData(
 ): Omit<RequestOptions, "data"> {
   if (Array.isArray(options.headers))
     throw new Error("options.headers array is not supported");
-  if (data && typeof data === "object") {
-    if (data instanceof URLSearchParams) {
-      options.body = data.toString();
-      setHeader(options, "content-type", "application/x-www-form-urlencoded");
-    } else if (Buffer.isBuffer(data)) {
-      options.body = data;
-    } else {
-      options.body = JSON.stringify(data);
-      setHeader(options, "content-type", "application/json");
-    }
+  if (!data) return options;
+  if (data instanceof URLSearchParams) {
+    options.body = data.toString();
+    setHeader(options, "content-type", "application/x-www-form-urlencoded");
+  } else if (Buffer.isBuffer(data)) {
+    options.body = data;
+  } else if (typeof data === "object") {
+    options.body = JSON.stringify(data);
+    setHeader(options, "content-type", "application/json");
   } else {
     options.body = data;
   }
