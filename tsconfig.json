@@ -1,14 +1,14 @@
 {
+  "extends": "@tsconfig/node16/tsconfig.json",
   "compilerOptions": {
-    "target": "ESNext",
-    "strict": true,
-    "declaration": true,
-    "emitDeclarationOnly": true,
-    "moduleResolution": "node",
+    "moduleResolution": "NodeNext",
     "isolatedModules": true,
     "allowSyntheticDefaultImports": true,
     "rootDir": "src",
-    "outDir": "dist"
+    "module": "NodeNext",
+    "declaration": false
   },
-  "include": ["src"]
+  "include": [
+    "src"
+  ]
 }
